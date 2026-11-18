@@ -1,0 +1,17 @@
+name: CustomAlerts
+main: NhanAZ\CustomAlerts\Main
+version: 1.0.0
+api: [5.0.0]
+author: NhanAZ
+description: Customize player-facing PocketMine and Bedrock language messages from configuration.
+extensions: [zip]
+commands:
+  customalerts:
+    description: Reload CustomAlerts configuration
+    usage: "/customalerts reload"
+    permission: customalerts.command.reload
+    aliases: [ca]
+permissions:
+  customalerts.command.reload:
+    description: Allows reloading CustomAlerts configuration
+    default: op
