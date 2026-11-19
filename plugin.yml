@@ -3,6 +3,7 @@ main: NhanAZ\CustomAlerts\Main
 version: 1.0.0
 api: [5.0.0]
 author: NhanAZ
+authors: [AxolotlBucketLabs]
 description: Customize player-facing PocketMine and Bedrock language messages from configuration.
 extensions: [zip]
 commands:
