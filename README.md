@@ -52,7 +52,7 @@ Named event placeholders:
 | `{message}` | Chat text |
 | `{reason}` | Existing disconnect or quit reason where available |
 | `{screen}` | Existing disconnect screen message |
-| `{killer}` | Attacking player's display name, the attacking mob's name, or `messages.death.killer-fallback` (default `environment`) |
+| `{killer}` | Attacking player's display name, the attacking mob's name, or `messages.death.killer-fallback` (shipped config default `the server`) |
 | `{x}`, `{y}`, `{z}` | Player block coordinates |
 
 Pre-login messages only have `{player}`, because no player object exists yet. A placeholder that belongs to another message, such as `{killer}` in `join`, produces a warning on load. Unknown placeholders are left unchanged and logged once, unless another plugin registers them through the API below.

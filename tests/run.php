@@ -23,9 +23,18 @@ $assert = static function(bool $condition, string $message) : void{
 
 $manifest = yaml_parse_file($root . "/plugin.yml");
 $config = yaml_parse_file($root . "/resources/config.yml");
-$assert(is_array($manifest) && is_string($manifest["main"] ?? null) && is_string($manifest["src-namespace-prefix"] ?? null), "plugin.yml did not parse");
-$assert(is_array($config) && ($config["config-version"] ?? null) === ConfigLoader::VERSION, "config.yml did not parse");
-$mainRelative = substr($manifest["main"], strlen($manifest["src-namespace-prefix"]) + 1);
+if(!is_array($manifest)){
+	throw new RuntimeException("plugin.yml did not parse");
+}
+$mainClass = $manifest["main"] ?? null;
+$namespacePrefix = $manifest["src-namespace-prefix"] ?? null;
+if(!is_string($mainClass) || !is_string($namespacePrefix)){
+	throw new RuntimeException("plugin.yml is missing its main class or namespace prefix");
+}
+if(!is_array($config) || ($config["config-version"] ?? null) !== ConfigLoader::VERSION){
+	throw new RuntimeException("config.yml did not parse or has an unsupported version");
+}
+$mainRelative = substr($mainClass, strlen($namespacePrefix) + 1);
 $assert(is_file($root . "/src/" . str_replace("\\", "/", $mainRelative) . ".php"), "plugin main class path does not match plugin.yml");
 
 $catalogJson = file_get_contents($root . "/resources/translation-catalog.json");
@@ -62,7 +71,7 @@ foreach(AlertType::cases() as $type){
 	$assert($default->getConfig()->getAlert($type) instanceof Template, "default config should define " . $type->value);
 }
 $assert(!$default->getConfig()->getResourcePack()->isEnabled(), "default config should keep the resource pack disabled");
-$assert($default->getConfig()->getKillerFallback() === "the environment", "default killer fallback is incorrect");
+$assert($default->getConfig()->getKillerFallback() === "the server", "default killer fallback is incorrect");
 $switchedOff = $loader->load(["custom-messages" => false] + $config);
 $assert($switchedOff->getWarnings() === [] && $switchedOff->getConfig()->countAlerts() === 0, "custom-messages false should turn off every message");
 $assert($switchedOff->getConfig()->getKillerFallback() === "environment", "custom-messages false should also ignore the killer fallback");
@@ -119,25 +128,41 @@ try{
 	$packPath = $builder->build($translations);
 	$archive = new ZipArchive();
 	$assert($archive->open($packPath) === true, "generated language pack is not a valid ZIP archive");
-	$packManifest = json_decode((string) $archive->getFromName("manifest.json"), true, flags: JSON_THROW_ON_ERROR);
+	$packManifestDecoded = json_decode((string) $archive->getFromName("manifest.json"), true, flags: JSON_THROW_ON_ERROR);
 	$localeList = json_decode((string) $archive->getFromName("texts/languages.json"), true, flags: JSON_THROW_ON_ERROR);
 	$languageFile = (string) $archive->getFromName("texts/vi_VN.lang");
 	$archive->close();
-	$assert(is_array($packManifest) && ($packManifest["format_version"] ?? null) === 2, "generated pack manifest format is incorrect");
-	$assert(($packManifest["modules"][0]["type"] ?? null) === "resources", "generated pack is not a resource pack");
+	if(!is_array($packManifestDecoded)){
+		throw new RuntimeException("generated pack manifest is not an object");
+	}
+	$packManifest = $packManifestDecoded;
+	$assert(($packManifest["format_version"] ?? null) === 2, "generated pack manifest format is incorrect");
+	$modules = $packManifest["modules"] ?? null;
+	$firstModule = is_array($modules) ? ($modules[0] ?? null) : null;
+	$assert(is_array($firstModule) && ($firstModule["type"] ?? null) === "resources", "generated pack is not a resource pack");
 	$assert($localeList === ["vi_VN"], "generated pack locale list is incorrect");
 	$assert(str_contains($languageFile, "enchantment.protect.all=Bảo vệ"), "generated locale file is missing its translation");
 	$assert(str_contains($languageFile, "death.attack.generic=%1\$s đã chết"), "generated locale file did not convert PocketMine placeholders to Bedrock syntax");
 	$assert(str_contains($languageFile, "test.line=Dòng 1\\nDòng 2"), "generated locale file did not encode a newline");
-	$firstVersion = $packManifest["header"]["version"];
+	$header = $packManifest["header"] ?? null;
+	$firstVersion = is_array($header) ? ($header["version"] ?? null) : null;
+	if(!is_array($firstVersion) || !isset($firstVersion[2]) || !is_int($firstVersion[2])){
+		throw new RuntimeException("generated pack manifest version is invalid");
+	}
 
 	$assert($builder->build($translations) === $packPath, "unchanged translations should reuse the generated pack");
 	$changedPath = $builder->build(["vi_VN" => ["menu.play" => "Vào server"]]);
 	$changedArchive = new ZipArchive();
 	$assert($changedArchive->open($changedPath) === true, "updated language pack is not a valid ZIP archive");
-	$changedManifest = json_decode((string) $changedArchive->getFromName("manifest.json"), true, flags: JSON_THROW_ON_ERROR);
+	$changedManifestDecoded = json_decode((string) $changedArchive->getFromName("manifest.json"), true, flags: JSON_THROW_ON_ERROR);
 	$changedArchive->close();
-	$assert(is_array($changedManifest) && $changedManifest["header"]["version"][2] === $firstVersion[2] + 1, "changed translations should increment the pack version");
+	if(!is_array($changedManifestDecoded)){
+		throw new RuntimeException("updated pack manifest is not an object");
+	}
+	$changedManifest = $changedManifestDecoded;
+	$changedHeader = $changedManifest["header"] ?? null;
+	$changedVersion = is_array($changedHeader) ? ($changedHeader["version"] ?? null) : null;
+	$assert(is_array($changedVersion) && ($changedVersion[2] ?? null) === $firstVersion[2] + 1, "changed translations should increment the pack version");
 	$assert(!file_exists($packPath), "stale generated packs should be removed");
 }finally{
 	$resolvedTemporaryDirectory = realpath($temporaryDirectory);
@@ -146,7 +171,8 @@ try{
 		str_starts_with($resolvedTemporaryDirectory, $resolvedTempRoot . DIRECTORY_SEPARATOR) &&
 		str_contains(basename($resolvedTemporaryDirectory), "customalerts-test-")
 	){
-		foreach(scandir($resolvedTemporaryDirectory) ?: [] as $file){
+		$files = scandir($resolvedTemporaryDirectory);
+		foreach($files === false ? [] : $files as $file){
 			if($file !== "." && $file !== ".."){
 				unlink($resolvedTemporaryDirectory . DIRECTORY_SEPARATOR . $file);
 			}

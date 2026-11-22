@@ -30,12 +30,13 @@ final class TextPacketRewriter implements PacketRewriter{
 			return null;
 		}
 
-		$missing = $template->findMissingIndex($packet->parameters);
+		$parameters = array_values($packet->parameters);
+		$missing = $template->findMissingIndex($parameters);
 		if($missing !== null){
 			$this->reportMissingParameter($packet->message, $missing);
 			return null;
 		}
-		$message = $template->renderIndexed($packet->parameters);
+		$message = $template->renderIndexed($parameters);
 
 		$replacement = match($packet->type){
 			TextPacket::TYPE_TRANSLATION => TextPacket::raw($message),
