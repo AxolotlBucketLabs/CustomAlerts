@@ -5,16 +5,16 @@ CustomAlerts lets a PocketMine-MP or Axolotl-PM server owner change player-facin
 ## Requirements and installation
 
 - Axolotl-PM or PocketMine-MP API 5 with PHP 8.4 or newer.
-- PHP `zip` extension.
+- PHP `yaml` and `zip` extensions.
 - Packet overrides were checked against Axolotl-PM stable commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e), version 5.51.3, with BedrockProtocol `64.0.0+bedrock-1.26.60`.
 
-Build the plugin PHAR with PHP:
+For local development, place the project folder in `plugins/`. To build a PHAR on the server, install [AxolotlBucketLabs DevTools v4.1.1](https://github.com/AxolotlBucketLabs/DevTools/releases/tag/v4.1.1) and run:
 
-```sh
-php -dphar.readonly=0 tools/build-plugin.php
+```text
+/devtools build plugin CustomAlerts
 ```
 
-Copy `build/CustomAlerts.phar` to the server's `plugins/` directory and start the server once. Edit `plugin_data/CustomAlerts/config.yml`, then run `/customalerts reload`. A `ca` alias is available. The reload permission is `customalerts.command.reload` and defaults to operators.
+GitHub Actions builds, validates and uploads a PHAR with DevTools v4.1.1. Download the artifact from the workflow run, then copy `CustomAlerts.phar` to the server's `plugins/` directory and start the server once. Edit `plugin_data/CustomAlerts/config.yml`, then run `/customalerts reload`. A `ca` alias is available. The reload permission is `customalerts.command.reload` and defaults to operators.
 
 After a successful reload the sender sees how many messages and packet overrides are active and whether the resource pack was built. Configuration warnings are listed in chat, up to ten of them, and all of them are also written to the console. A failed reload shows the error and keeps the previous configuration running.
 
@@ -131,8 +131,9 @@ CustomAlerts does not replace the server's global `Language` object. It cannot g
 ```sh
 composer test
 composer analyse
-composer build
 ```
+
+GitHub Actions also builds and uploads the validated PHAR with DevTools v4.1.1.
 
 Regenerate the catalog when changing the server source revision:
 

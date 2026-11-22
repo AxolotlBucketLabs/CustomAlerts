@@ -20,7 +20,6 @@
 	},
 	"scripts": {
 		"analyse": "phpstan analyse",
-		"test": "@php tests/run.php",
-		"build": "@php -d phar.readonly=0 tools/build-plugin.php"
+		"test": "@php tests/run.php"
 	}
 }

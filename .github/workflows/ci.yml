@@ -8,12 +8,10 @@ on:
     branches:
       - main
 
-permissions: {}
-
 jobs:
   quality:
     name: PHP 8.4
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -41,5 +39,15 @@ jobs:
       - name: Run PHPStan at maximum level
         run: composer analyse
 
-      - name: Build plugin PHAR
-        run: composer build
+  build:
+    name: Build PHAR with DevTools v4.1.1
+    needs: quality
+    permissions:
+      contents: read
+    uses: AxolotlBucketLabs/DevTools/.github/workflows/build-plugin.yml@c2eb715205a9dcb485a4ecabd17512f32f24d5d7 # v4.1.1
+    with:
+      project: .
+      php-version: "8.4"
+      pm-version-major: "5"
+      axolotl-ref: "5.51.2"
+      phpstan: "max"
