@@ -4,7 +4,7 @@ CustomAlerts lets a PocketMine-MP or Axolotl-PM server owner change player-facin
 
 ## Requirements and installation
 
-- Axolotl-PM or PocketMine-MP API 5 with PHP 8.3 or newer.
+- Axolotl-PM or PocketMine-MP API 5 with PHP 8.4 or newer.
 - PHP `zip` extension.
 - Packet overrides were checked against Axolotl-PM stable commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e), version 5.51.3, with BedrockProtocol `64.0.0+bedrock-1.26.60`.
 
