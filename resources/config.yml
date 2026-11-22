@@ -1,56 +1,46 @@
-config-version: 1
+config-version: 2
 
-# Vietnamese message samples use Bedrock § color codes. All overrides stay disabled by default.
+# Set false to turn off every message below and keep the server's own messages.
+custom-messages: true
+
+# Messages use Bedrock § color codes. Remove a key to keep the server's message for it.
+# Set false to hide join, quit, chat, death broadcast or kick broadcast.
 messages:
-  join:
-    enabled: false
-    hide: false
-    format: "§8[§a+§8] §f{display_name} §7đã tham gia máy chủ"
-  quit:
-    enabled: false
-    hide: false
-    format: "§8[§c-§8] §f{display_name} §7đã rời máy chủ"
-  chat:
-    enabled: false
-    hide: false
-    format: "§8[§bCHAT§8] §f{display_name} §8» §7{message}"
+  join: "§8[§a+§8] §f{display_name} §7joined the server"
+  quit: "§8[§c-§8] §f{display_name} §7left the server"
+  chat: "§8[§bCHAT§8] §f{display_name} §8» §7{message}"
   death:
-    enabled: false
-    broadcast: "§8[§cX§8] §f{player} §7đã gục ngã tại §f{world}"
-    screen: "§cBạn đã gục ngã."
+    broadcast: "§8[§cX§8] §f{player} §7died in §f{world}"
+    screen: "§cYou died."
+    # {killer} value when the player was not killed by another player or a mob.
+    killer-fallback: "the server"
   kick:
-    enabled: false
-    broadcast: "§8[§e!§8] §f{display_name} §7đã bị ngắt kết nối"
-    reason: "§cKết nối bị ngắt: §f{reason}"
-    screen: "§cBạn đã bị ngắt khỏi máy chủ."
-  login:
-    enabled: false
-    message: "§cKhông thể kết nối lúc này. §7Vui lòng thử lại sau."
+    broadcast: "§8[§e!§8] §f{display_name} §7was disconnected"
+    reason: "§cDisconnected: §f{reason}"
+    screen: "§cYou were disconnected from the server."
+  login: "§cYou cannot join right now. §7Please try again later."
   pre-login:
     server-full:
-      enabled: false
-      reason: "§cMáy chủ hiện đã đầy."
-      screen: "§cMáy chủ hiện đã đầy. §7Vui lòng thử lại sau."
+      reason: "§cThe server is full."
+      screen: "§cThe server is full. §7Please try again later."
     whitelist:
-      enabled: false
-      reason: "§cBạn chưa được thêm vào danh sách cho phép."
-      screen: "§cBạn chưa được thêm vào danh sách cho phép."
+      reason: "§cYou are not on the whitelist."
+      screen: "§cYou are not on the whitelist."
     banned:
-      enabled: false
-      reason: "§cBạn đã bị cấm khỏi máy chủ."
-      screen: "§cBạn đã bị cấm khỏi máy chủ."
+      reason: "§cYou are banned from this server."
+      screen: "§cYou are banned from this server."
 
 # Overrides for translation keys still present in outgoing TextPackets.
-# Numeric placeholders refer to packet parameters: {0}, {1}, ...
+# Numeric placeholders refer to packet parameters: {%0}, {%1}, ...
 packets:
   text:
-    # "death.attack.generic": "§8[§cX§8] §f{0} §7đã gục ngã"
+    # "death.attack.generic": "§8[§cX§8] §f{%0} §7died"
   # DisconnectPacket contains already-rendered text, so match the exact current server-language message.
   disconnect:
-    # "You are banned from this server.": "§cBạn không thể tham gia máy chủ này."
+    # "You are banned from this server.": "§cYou cannot join this server."
 
 # Full translations/vi_VN.ini is copied to plugin_data/CustomAlerts/translations on first start.
-# Enable the pack to offer catalogued client-side keys from locale files to players.
+# Enable the pack to offer client-side keys from locale files to players.
 # Inline translations below take precedence over values in those files.
 resource-pack:
   enabled: false

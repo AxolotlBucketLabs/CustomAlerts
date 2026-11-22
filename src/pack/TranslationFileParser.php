@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace NhanAZ\CustomAlerts;
+namespace AxolotlBucketLabs\CustomAlerts\pack;
 
 use RuntimeException;
 use function array_key_exists;
 use function ltrim;
 use function preg_replace;
 use function preg_split;
-use function strpos;
 use function str_starts_with;
+use function strpos;
 use function substr;
 use function trim;
 
 final class TranslationFileParser{
-	/** @return array<string, string> */
+	/**
+	 * @return array<string, string>
+	 * @throws RuntimeException
+	 */
 	public static function parse(string $contents) : array{
 		$contents = preg_replace('/^\xEF\xBB\xBF/', "", $contents, 1) ?? $contents;
 		$lines = preg_split('/\r\n|\r|\n/', $contents);
