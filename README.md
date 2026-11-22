@@ -1,12 +1,14 @@
 # CustomAlerts
 
-CustomAlerts lets a PocketMine-MP or Axolotl-PM server owner change player-facing messages from YAML and full locale files. It uses server events for join, quit, chat, death, kick and login messages, packet overrides for recognized client translation keys, and a generated Bedrock resource pack for client language strings.
+CustomAlerts lets Axolotl-PM server owners change player-facing messages from YAML and full locale files. It uses server events for join, quit, chat, death, kick and login messages, packet overrides for recognized client translation keys, and a generated Bedrock resource pack for client language strings.
+
+[![CI](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml/badge.svg)](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml) [![License](https://img.shields.io/github/license/AxolotlBucketLabs/CustomAlerts)](LICENSE) [![Discord](https://img.shields.io/discord/1568295845374206052?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/Pk4FrNvHnM)
 
 ## Requirements and installation
 
-- Axolotl-PM or PocketMine-MP API 5 with PHP 8.4 or newer.
-- PHP `yaml` and `zip` extensions.
-- Packet overrides were checked against Axolotl-PM stable commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e), version 5.51.3, with BedrockProtocol `64.0.0+bedrock-1.26.60`.
+- Axolotl-PM API `5.0.0` is the declared manifest floor. CI runs against Axolotl-PM `5.51.2` on PHP `8.4`.
+- PHP `^8.4` with the `yaml` and `zip` extensions.
+- Packet overrides were checked against Axolotl-PM commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e) with BedrockProtocol `64.0.0+bedrock-1.26.60`.
 
 For local development, place the project folder in `plugins/`. To build a PHAR on the server, install [AxolotlBucketLabs DevTools v4.1.1](https://github.com/AxolotlBucketLabs/DevTools/releases/tag/v4.1.1) and run:
 
@@ -77,7 +79,7 @@ packets:
 
 ### Full locale files
 
-The plugin includes a full Vietnamese file with all 658 keys from the audited Axolotl-PM translation catalog. On first start it copies the file to `plugin_data/CustomAlerts/translations/vi_VN.ini`. Edit that data-folder copy; `/customalerts reload` rebuilds the pack and the plugin does not overwrite your edits during updates. The copy also does not automatically gain keys added by later core versions: merge the newer upstream locale file and update the plugin's translation catalog before those keys can be used. Add another locale as a file named after its Bedrock locale, such as `en_US.ini` or `fr_FR.ini`.
+The plugin includes a full Vietnamese file with all 658 keys from the audited Axolotl-PM translation catalog. On first start it copies the file to `plugin_data/CustomAlerts/translations/vi_VN.ini`. Edit that data-folder copy and run `/customalerts reload` to rebuild the pack. The plugin does not overwrite your edits during updates. The copy also does not automatically gain keys added by later core versions. Merge the newer upstream locale file and update the plugin's translation catalog before those keys can be used. Add another locale as a file named after its Bedrock locale, such as `en_US.ini` or `fr_FR.ini`.
 
 Enable the resource pack to offer the client-side entries from those files:
 
@@ -124,7 +126,7 @@ Call `CustomAlerts::reloadAlerts()` to reload the configuration from code. It re
 
 The translation catalog records all 658 keys in the audited Axolotl-PM `eng.ini` and the placeholder indices for each key. It contains 306 server-side and 352 client-side keys. `pocketmine.*` entries are translated by the server before many packets are sent, so they are only customizable through a supported semantic event adapter. Other entries can be intercepted if they remain in an outgoing translation packet, or customized with a Bedrock resource pack if rendered by the client. See [translation coverage](docs/translation-coverage.md).
 
-CustomAlerts does not replace the server's global `Language` object. It cannot generically alter startup/setup text, console logs, or server-translated output after its source key has been discarded. Packet classes live in the internal `pocketmine\network\mcpe` namespace, so packet behavior is verified for the exact Axolotl-PM revision above; the API manifest's `5.0.0` floor does not claim packet compatibility across every API 5 release.
+CustomAlerts does not replace the server's global `Language` object. It cannot generically alter startup or setup text, console logs, or server-translated output after the source key is gone. Packet classes live in the internal `pocketmine\network\mcpe` namespace. Their behavior was checked against the exact Axolotl-PM revision above, so the manifest's API `5.0.0` floor does not claim packet compatibility with every API 5 release.
 
 ## Development checks
 

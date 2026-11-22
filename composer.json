@@ -1,6 +1,6 @@
 {
 	"name": "axolotlbucketlabs/customalerts",
-	"description": "Customize player-facing PocketMine and Bedrock language messages from configuration.",
+	"description": "Customize player-facing Axolotl-PM and Bedrock language messages from configuration.",
 	"type": "project",
 	"license": "MIT",
 	"require": {

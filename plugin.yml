@@ -5,7 +5,8 @@ version: 2.0.0
 api: [5.0.0]
 author: NhanAZ
 authors: [AxolotlBucketLabs]
-description: Customize player-facing PocketMine and Bedrock language messages from configuration.
+description: Customize player-facing Axolotl-PM and Bedrock language messages from configuration.
+extensions: [yaml, zip]
 permissions:
   customalerts.command.reload:
     description: Allows reloading CustomAlerts configuration

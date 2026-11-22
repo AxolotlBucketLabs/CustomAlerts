@@ -1,6 +1,6 @@
 # Translation coverage
 
-The catalog is generated from Axolotl-PM `resources/translations/eng.ini` at commit `77f832da28e5b52996207ca5a8d8b54fd827b77e`.
+The catalog is generated from Axolotl-PM `resources/translations/eng.ini` at commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e).
 
 | Group | Keys | How CustomAlerts can reach them |
 | --- | ---: | --- |
