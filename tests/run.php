@@ -8,6 +8,7 @@ use AxolotlBucketLabs\CustomAlerts\catalog\TranslationCatalog;
 use AxolotlBucketLabs\CustomAlerts\catalog\TranslationSide;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigException;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
+use AxolotlBucketLabs\CustomAlerts\pack\BundledLocaleFiles;
 use AxolotlBucketLabs\CustomAlerts\pack\LanguagePackBuilder;
 use AxolotlBucketLabs\CustomAlerts\pack\TranslationFileParser;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
@@ -19,6 +20,17 @@ $assert = static function(bool $condition, string $message) : void{
 	if(!$condition){
 		throw new RuntimeException($message);
 	}
+};
+$sameList = static function(array $left, array $right) : bool{
+	if(count($left) !== count($right)){
+		return false;
+	}
+	foreach($right as $index => $value){
+		if(($left[$index] ?? null) !== $value){
+			return false;
+		}
+	}
+	return true;
 };
 
 $manifest = yaml_parse_file($root . "/plugin.yml");
@@ -49,6 +61,43 @@ $fullLocaleContents = file_get_contents($root . "/resources/translations/vi_VN.i
 $fullLocale = TranslationFileParser::parse($fullLocaleContents === false ? "" : $fullLocaleContents);
 $assert(count($fullLocale) === 658, "full Vietnamese locale file should contain all 658 audited keys");
 $assert(($fullLocale["death.attack.generic"] ?? null) === "{%0} đã chết", "full Vietnamese locale file is missing its death translation");
+$assert(array_key_exists("accept_license ", $fullLocale), "Vietnamese locale must preserve the catalog key's trailing space");
+
+$expectedLocales = ["bg_BG", "de_DE", "en_US", "es_ES", "fr_FR", "it_IT", "ja_JP", "ko_KR", "lv_LV", "nl_NL", "ru_RU", "tr_TR", "vi_VN", "zh_CN"];
+$assert($sameList(array_keys(BundledLocaleFiles::FILES), $expectedLocales), "the bundled Bedrock locale list should contain all 14 supported locales");
+$assert($sameList(array_keys(BundledLocaleFiles::NAMES), $expectedLocales), "every bundled locale should have a display name");
+foreach($expectedLocales as $locale){
+	$assert(array_key_exists($locale, BundledLocaleFiles::FILES), "$locale locale file is not registered");
+	$assert(array_key_exists($locale, BundledLocaleFiles::NAMES), "$locale display name is missing");
+}
+$verifiedClientTranslations = [];
+foreach(BundledLocaleFiles::FILES as $locale => $localeFile){
+	$contents = file_get_contents($root . "/resources/" . $localeFile);
+	if($contents === false){
+		throw new RuntimeException("$locale locale file is missing");
+	}
+	$entries = TranslationFileParser::parse($contents);
+	$assert($entries !== [], "$locale locale file should contain translations");
+	$clientEntries = 0;
+	foreach($entries as $key => $value){
+		$catalogEntry = $catalog->get($key);
+		if($catalogEntry === null){
+			throw new RuntimeException("$locale locale contains uncatalogued key " . json_encode($key));
+		}
+		preg_match_all('/\\{%([0-9]+)}/', $value, $matches);
+		$placeholders = array_values(array_unique(array_map(intval(...), $matches[1])));
+		sort($placeholders);
+		$assert($placeholders === $catalogEntry->getPlaceholders(), "$locale locale has invalid placeholders for " . json_encode($key));
+		if($catalogEntry->getSide() === TranslationSide::Client){
+			++$clientEntries;
+			$verifiedClientTranslations[$locale][$key] = $value;
+		}
+		if($locale === "en_US"){
+			$assert($value === $catalogEntry->getEnglish(), "English locale differs from the catalog for " . json_encode($key));
+		}
+	}
+	$assert($clientEntries > 0, "$locale locale should have at least one verified client translation");
+}
 
 $named = Template::parse("<{player}> {message} {unknown}");
 $assert($named->getNames() === ["player", "message", "unknown"], "template names were not collected");
@@ -130,6 +179,7 @@ try{
 	$assert($archive->open($packPath) === true, "generated language pack is not a valid ZIP archive");
 	$packManifestDecoded = json_decode((string) $archive->getFromName("manifest.json"), true, flags: JSON_THROW_ON_ERROR);
 	$localeList = json_decode((string) $archive->getFromName("texts/languages.json"), true, flags: JSON_THROW_ON_ERROR);
+	$languageNames = json_decode((string) $archive->getFromName("texts/language_names.json"), true, flags: JSON_THROW_ON_ERROR);
 	$languageFile = (string) $archive->getFromName("texts/vi_VN.lang");
 	$archive->close();
 	if(!is_array($packManifestDecoded)){
@@ -141,6 +191,7 @@ try{
 	$firstModule = is_array($modules) ? ($modules[0] ?? null) : null;
 	$assert(is_array($firstModule) && ($firstModule["type"] ?? null) === "resources", "generated pack is not a resource pack");
 	$assert($localeList === ["vi_VN"], "generated pack locale list is incorrect");
+	$assert($languageNames === [["vi_VN", "Tiếng Việt (Việt Nam)"]], "generated pack language display names are incorrect");
 	$assert(str_contains($languageFile, "enchantment.protect.all=Bảo vệ"), "generated locale file is missing its translation");
 	$assert(str_contains($languageFile, "death.attack.generic=%1\$s đã chết"), "generated locale file did not convert PocketMine placeholders to Bedrock syntax");
 	$assert(str_contains($languageFile, "test.line=Dòng 1\\nDòng 2"), "generated locale file did not encode a newline");
@@ -164,6 +215,31 @@ try{
 	$changedVersion = is_array($changedHeader) ? ($changedHeader["version"] ?? null) : null;
 	$assert(is_array($changedVersion) && ($changedVersion[2] ?? null) === $firstVersion[2] + 1, "changed translations should increment the pack version");
 	$assert(!file_exists($packPath), "stale generated packs should be removed");
+	$allLocalesPackPath = $builder->build($verifiedClientTranslations);
+	$allLocalesArchive = new ZipArchive();
+	$assert($allLocalesArchive->open($allLocalesPackPath) === true, "generated 14-locale pack is not a valid ZIP archive");
+	$allLocales = json_decode((string) $allLocalesArchive->getFromName("texts/languages.json"), true, flags: JSON_THROW_ON_ERROR);
+	$allLanguageNames = json_decode((string) $allLocalesArchive->getFromName("texts/language_names.json"), true, flags: JSON_THROW_ON_ERROR);
+	$assert($allLocales === $expectedLocales, "generated pack does not declare all 14 verified locales");
+	if(!is_array($allLanguageNames) || count($allLanguageNames) !== 14){
+		throw new RuntimeException("generated pack is missing a display name for a locale");
+	}
+	foreach($expectedLocales as $index => $locale){
+		$namePair = $allLanguageNames[$index] ?? null;
+		if(!is_array($namePair) || ($namePair[0] ?? null) !== $locale || ($namePair[1] ?? null) !== BundledLocaleFiles::NAMES[$locale]){
+			throw new RuntimeException("$locale display name is missing or out of order in the generated pack");
+		}
+		$localeContents = $allLocalesArchive->getFromName("texts/$locale.lang");
+		if($localeContents === false){
+			throw new RuntimeException("$locale translation file is missing from the generated pack");
+		}
+		$packedEntries = TranslationFileParser::parse($localeContents);
+		$assert(count($packedEntries) === count($verifiedClientTranslations[$locale]), "$locale resource file has an unexpected translation count");
+		foreach($verifiedClientTranslations[$locale] as $key => $_){
+			$assert(array_key_exists($key, $packedEntries), "$locale resource file is missing " . json_encode($key));
+		}
+	}
+	$allLocalesArchive->close();
 }finally{
 	$resolvedTemporaryDirectory = realpath($temporaryDirectory);
 	$resolvedTempRoot = realpath(sys_get_temp_dir());

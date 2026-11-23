@@ -17,6 +17,7 @@ use AxolotlBucketLabs\CustomAlerts\listener\DeathListener;
 use AxolotlBucketLabs\CustomAlerts\listener\PacketListener;
 use AxolotlBucketLabs\CustomAlerts\listener\PluginDisableListener;
 use AxolotlBucketLabs\CustomAlerts\listener\ResourcePackListener;
+use AxolotlBucketLabs\CustomAlerts\pack\BundledLocaleFiles;
 use AxolotlBucketLabs\CustomAlerts\pack\LanguagePackBuilder;
 use AxolotlBucketLabs\CustomAlerts\pack\LanguagePackLoader;
 use AxolotlBucketLabs\CustomAlerts\pack\LoadedLanguagePack;
@@ -31,8 +32,6 @@ use function file_get_contents;
 use function is_file;
 
 final class CustomAlerts extends PluginBase{
-	private const DEFAULT_LOCALE_FILE = "translations/vi_VN.ini";
-
 	private PlaceholderRegistry $placeholders;
 	private TranslationCatalog $catalog;
 	private ConfigLoader $configLoader;
@@ -50,8 +49,10 @@ final class CustomAlerts extends PluginBase{
 	 */
 	protected function onEnable() : void{
 		$this->saveDefaultConfig();
-		if(!is_file(Path::join($this->getDataFolder(), self::DEFAULT_LOCALE_FILE)) && !$this->saveResource(self::DEFAULT_LOCALE_FILE)){
-			throw new RuntimeException("Required " . self::DEFAULT_LOCALE_FILE . " plugin resource is missing");
+		foreach(BundledLocaleFiles::FILES as $localeFile){
+			if(!is_file(Path::join($this->getDataFolder(), $localeFile)) && !$this->saveResource($localeFile)){
+				throw new RuntimeException("Required " . $localeFile . " plugin resource is missing");
+			}
 		}
 		$catalogJson = file_get_contents($this->getResourcePath("translation-catalog.json"));
 		if($catalogJson === false){

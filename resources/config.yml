@@ -39,7 +39,7 @@ packets:
   disconnect:
     # "You are banned from this server.": "§cYou cannot join this server."
 
-# Full translations/vi_VN.ini is copied to plugin_data/CustomAlerts/translations on first start.
+# Bundled locale files are copied to plugin_data/CustomAlerts/translations on first start.
 # Enable the pack to offer client-side keys from locale files to players.
 # Inline translations below take precedence over values in those files.
 resource-pack:

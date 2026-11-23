@@ -8,6 +8,7 @@ use JsonException;
 use RuntimeException;
 use ZipArchive;
 use function array_keys;
+use function array_map;
 use function count;
 use function file_exists;
 use function file_get_contents;
@@ -108,7 +109,7 @@ final class LanguagePackBuilder{
 		if($archive->open($path) !== true){
 			return false;
 		}
-		$valid = $archive->locateName("manifest.json") !== false && $archive->locateName("texts/languages.json") !== false;
+	$valid = $archive->locateName("manifest.json") !== false && $archive->locateName("texts/languages.json") !== false && $archive->locateName("texts/language_names.json") !== false;
 		$archive->close();
 		return $valid;
 	}
@@ -143,7 +144,8 @@ final class LanguagePackBuilder{
 		];
 		$files = [
 			"manifest.json" => json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
-			"texts/languages.json" => json_encode(array_keys($translations), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)
+			"texts/languages.json" => json_encode(array_keys($translations), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT),
+			"texts/language_names.json" => json_encode(array_map(static fn(string $locale) : array => [$locale, BundledLocaleFiles::NAMES[$locale] ?? $locale], array_keys($translations)), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
 		];
 		foreach($translations as $locale => $entries){
 			$files["texts/$locale.lang"] = self::encodeLanguageFile($entries);

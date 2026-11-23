@@ -79,7 +79,7 @@ packets:
 
 ### Full locale files
 
-The plugin includes a full Vietnamese file with all 658 keys from the audited Axolotl-PM translation catalog. On first start it copies the file to `plugin_data/CustomAlerts/translations/vi_VN.ini`. Edit that data-folder copy and run `/customalerts reload` to rebuild the pack. The plugin does not overwrite your edits during updates. The copy also does not automatically gain keys added by later core versions. Merge the newer upstream locale file and update the plugin's translation catalog before those keys can be used. Add another locale as a file named after its Bedrock locale, such as `en_US.ini` or `fr_FR.ini`.
+The plugin includes locale files for 14 Bedrock languages. On first start it copies them to `plugin_data/CustomAlerts/translations/`. Edit those data-folder copies and run `/customalerts reload` to rebuild the pack. The plugin does not overwrite your edits during updates. The files preserve the translation coverage of the pinned Axolotl-PM source, so some languages contain fewer client translations than others. The pack declares language names so players can select custom locale IDs such as Latvian. Missing entries are not replaced with English text. The client keeps its normal translation for keys the pack does not override.
 
 Enable the resource pack to offer the client-side entries from those files:
 
@@ -92,7 +92,7 @@ resource-pack:
 
 Locale files use PocketMine's `key=value` format and `{%0}`-style placeholders. The pack builder converts placeholders to Bedrock `.lang` syntax. Inline `resource-pack.translations` entries remain available and override the same key from a locale file.
 
-The full file also retains server-side `pocketmine.*` entries for reference, but a plugin cannot replace the server's global `Language` object. CustomAlerts leaves server-side entries and catalogued entries with mismatched placeholders out of the resource pack. Keys that are not in the catalog, such as other Bedrock client strings, are packaged without placeholder checks. Supported event messages remain configurable under `messages.*`. Players who are already connected need to reconnect to receive an updated pack. `required: true` asks players to accept this pack. Older generated packs in the data folder are removed when a new one is built.
+Locale files retain server-side entries for reference, but a plugin cannot replace the server's global `Language` object. CustomAlerts leaves server-side entries and catalogued entries with mismatched placeholders out of the resource pack. Keys that are not in the catalog, such as other Bedrock client strings, are packaged without placeholder checks. Supported event messages remain configurable under `messages.*`. Players who are already connected need to reconnect to receive an updated pack. `required: true` asks players to accept this pack. Older generated packs in the data folder are removed when a new one is built.
 
 ## Plugin API
 
@@ -145,4 +145,4 @@ php tools/generate-translation-catalog.php /path/to/PocketMine-MP/resources/tran
 
 ## License
 
-CustomAlerts code is licensed under the MIT License. The bundled `vi_VN.ini` translation data has its own attribution and LGPL license in [`resources/translations`](resources/translations/NOTICE.md).
+CustomAlerts code is licensed under the MIT License. The bundled locale data has its own attribution and LGPL license in [`resources/translations`](resources/translations/NOTICE.md).
