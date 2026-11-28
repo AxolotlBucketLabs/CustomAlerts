@@ -6,12 +6,12 @@ namespace AxolotlBucketLabs\CustomAlerts;
 
 use AxolotlBucketLabs\CustomAlerts\alert\AlertService;
 use AxolotlBucketLabs\CustomAlerts\command\CustomAlertsCommand;
-use AxolotlBucketLabs\CustomAlerts\config\AlertsConfig;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigException;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoadResult;
 use AxolotlBucketLabs\CustomAlerts\listener\ConnectionListener;
 use AxolotlBucketLabs\CustomAlerts\listener\DeathListener;
+use AxolotlBucketLabs\CustomAlerts\listener\WorldChangeListener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\ConfigLoadException;
 
@@ -36,6 +36,7 @@ final class CustomAlerts extends PluginBase{
 		$manager = $this->getServer()->getPluginManager();
 		$manager->registerEvents(new ConnectionListener($this->alerts), $this);
 		$manager->registerEvents(new DeathListener($this->alerts), $this);
+		$manager->registerEvents(new WorldChangeListener($this->alerts), $this);
 		$this->getServer()->getCommandMap()->register($this->getName(), new CustomAlertsCommand($this));
 	}
 

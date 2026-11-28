@@ -7,6 +7,7 @@ namespace AxolotlBucketLabs\CustomAlerts\alert;
 use AxolotlBucketLabs\CustomAlerts\config\AlertsConfig;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 use Logger;
+use pocketmine\utils\TextFormat;
 
 final class AlertService{
 	/** @var array<string, true> */
@@ -22,21 +23,13 @@ final class AlertService{
 		$this->reportedPlaceholders = [];
 	}
 
-	public function getKillerFallback() : string{
-		return $this->config->getKillerFallback();
-	}
-
-	public function isHidden(AlertType $type) : bool{
-		return $this->config->getAlert($type) === false;
-	}
-
 	public function render(AlertContext $context) : ?string{
 		$template = $this->config->getAlert($context->getType());
 		if(!$template instanceof Template){
 			return null;
 		}
 
-		return $template->renderNamed(function(string $name) use($context) : ?string{
+		$message = $template->renderNamed(function(string $name) use($context) : ?string{
 			$value = $context->getValue($name);
 			if($value !== null){
 				return $value;
@@ -49,5 +42,7 @@ final class AlertService{
 			}
 			return null;
 		});
+
+		return TextFormat::colorize($message);
 	}
 }

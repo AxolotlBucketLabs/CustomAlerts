@@ -1,6 +1,6 @@
 # CustomAlerts
 
-CustomAlerts replaces or hides selected server-wide system broadcasts. It supports join, quit, death and kick broadcasts through Axolotl-PM events. Every player receives the same configured message.
+CustomAlerts replaces selected broadcasts sent to everyone on the server. It supports first join, join, quit, kick, world change and death messages. Each player sees the same configured text.
 
 [![CI](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml/badge.svg)](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml) [![License](https://img.shields.io/github/license/AxolotlBucketLabs/CustomAlerts)](LICENSE) [![Discord](https://img.shields.io/discord/1568295845374206052?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/Pk4FrNvHnM)
 
@@ -19,33 +19,44 @@ GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or 
 
 ## Configuration
 
-The configuration uses `config-version: 2`. Version 1 configuration files are not migrated. Move an old file aside to generate the new defaults, then reapply its message text.
+Configuration version 3 uses one flat key for each message. Version 2 and older files are not migrated. Move an old file aside to generate the new defaults. A missing key normally keeps the server's default message. A missing death-cause key uses `messages.death`, and a first join without `messages.first_join` uses `messages.join`. If the attacker cannot be identified, the generic death message is used.
 
 ```yaml
-config-version: 2
-messages:
-  join: "§8[§a+§8] §f{display_name} §7joined the server"
-  quit: "§8[§c-§8] §f{display_name} §7left the server"
-  death:
-    broadcast: "§8[§cX§8] §f{player} §7died in §f{world}"
-    killer-fallback: "the server"
-  kick:
-    broadcast: "§8[§e!§8] §f{display_name} §7was disconnected"
+config-version: 3
+messages.join: "&2[{TIME}] &a{PLAYER}&e joined the game."
+messages.first_join: "&2[{TIME}] &a{PLAYER}&d joined the game for the first time."
+messages.quit: "&4[{TIME}] &c{PLAYER}&e has left the game"
+messages.kick: "&8[&e!&8] &f{PLAYER} &7was disconnected"
+messages.world_change: "&2[{TIME}] &a{PLAYER}&e moved from &c{ORIGIN}&e to &a{TARGET}"
+messages.death: "&c{PLAYER} died"
+messages.death.contact: "&cOops! {PLAYER} was killed by {BLOCK}"
+messages.death.kill: "&9{PLAYER} &ewas killed by &c{KILLER}"
+messages.death.projectile: "&c{PLAYER} was killed by {KILLER} by arrow"
+messages.death.suffocation: "&c{PLAYER} suffocated"
+messages.death.fall: "&c{PLAYER} fell from a high place"
+messages.death.fire: "&c{PLAYER} went up in flames"
+messages.death.on_fire: "&c{PLAYER} burned"
+messages.death.lava: "&c{PLAYER} tried to swim in lava"
+messages.death.drowning: "&c{PLAYER} drowned"
+messages.death.explosion: "&c{PLAYER} exploded"
+messages.death.void: "&c{PLAYER} fell into the void"
+messages.death.suicide: "&c{PLAYER} committed suicide"
+messages.death.magic: "&c{PLAYER} was killed by a spell"
 ```
 
-Each message can be removed to keep the server default or set to `false` to hide that broadcast. Templates use Bedrock `§` color codes. `messages.death.killer-fallback` supplies `{killer}` when the death cause has no player or mob attacker.
-
-The available placeholders are:
+Use `&` color codes in message strings. Available placeholders depend on the message:
 
 | Placeholder | Value |
 | --- | --- |
-| `{player}` | Player username. |
-| `{display_name}` | Player display name. |
-| `{world}` | World folder name. |
-| `{x}`, `{y}`, `{z}` | Player block coordinates. |
-| `{killer}` | Attacking player's display name, attacking mob name, or the configured fallback. |
+| `{PLAYER}` | Player username. |
+| `{TIME}` | Server time in `HH:MM:SS` format. |
+| `{TOTALPLAYERS}` | Number of online players. |
+| `{MAXPLAYERS}` | Maximum player count. |
+| `{ORIGIN}`, `{TARGET}` | Source and destination world display names. |
+| `{BLOCK}` | Block that caused contact damage. |
+| `{KILLER}` | Attacking player or mob name. |
 
-The plugin leaves player chat, messages sent to one player, client interface translations, console output and startup messages unchanged. It does not select a different language for each client. Write the configured templates in the language you want all players to see.
+The plugin leaves chat, messages sent to one player, server-list MOTD and startup output unchanged. It does not choose a different language for each client. Write message strings in the language you want everyone to see.
 
 ## Commands and permissions
 

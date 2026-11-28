@@ -18,26 +18,25 @@ $assert = static function(bool $condition, string $message) : void{
 
 $manifest = yaml_parse_file($root . "/plugin.yml");
 $config = yaml_parse_file($root . "/resources/config.yml");
-if(!is_array($manifest)){
-	throw new RuntimeException("plugin.yml did not parse");
+if(!is_array($manifest) || !is_array($config)){
+	throw new RuntimeException("plugin.yml or config.yml did not parse");
 }
 $mainClass = $manifest["main"] ?? null;
 $namespacePrefix = $manifest["src-namespace-prefix"] ?? null;
 if(!is_string($mainClass) || !is_string($namespacePrefix)){
 	throw new RuntimeException("plugin.yml is missing its main class or namespace prefix");
 }
-if(!is_array($config) || ($config["config-version"] ?? null) !== ConfigLoader::VERSION){
-	throw new RuntimeException("config.yml did not parse or has an unsupported version");
-}
+$assert(($config["config-version"] ?? null) === ConfigLoader::VERSION, "config.yml has an unsupported version");
+$assert(isset($config["messages.join"]) && !isset($config["messages"]["join"]), "message keys should be flat");
 $mainRelative = substr($mainClass, strlen($namespacePrefix) + 1);
 $assert(is_file($root . "/src/" . str_replace("\\", "/", $mainRelative) . ".php"), "plugin main class path does not match plugin.yml");
 
-$named = Template::parse("<{player}> {message} {unknown}");
-$assert($named->getNames() === ["player", "message", "unknown"], "template names were not collected");
-$assert($named->renderNamed(static fn(string $name) : ?string => ["player" => "Steve", "message" => "hello"][$name] ?? null) === "<Steve> hello {unknown}", "named template substitution failed");
+$named = Template::parse("<{PLAYER}> {TIME} {UNKNOWN}");
+$assert($named->getNames() === ["PLAYER", "TIME", "UNKNOWN"], "template names were not collected");
+$assert($named->renderNamed(static fn(string $name) : ?string => ["PLAYER" => "Steve", "TIME" => "12:00:00"][$name] ?? null) === "<Steve> 12:00:00 {UNKNOWN}", "named template substitution failed");
 
-$assert(AlertType::isBuiltInPlaceholder("player") && AlertType::isBuiltInPlaceholder("killer"), "built-in placeholder names were not recognized");
-$assert(!AlertType::isBuiltInPlaceholder("rank"), "unknown placeholder names should remain distinct from built-in placeholders");
+$assert(AlertType::isBuiltInPlaceholder("PLAYER") && AlertType::isBuiltInPlaceholder("KILLER"), "built-in placeholder names were not recognized");
+$assert(!AlertType::isBuiltInPlaceholder("RANK"), "unknown placeholder names should remain distinct from built-in placeholders");
 
 $loader = new ConfigLoader();
 $default = $loader->load($config);
@@ -45,30 +44,23 @@ $assert($default->getWarnings() === [], "default config should load without warn
 foreach(AlertType::cases() as $type){
 	$assert($default->getConfig()->getAlert($type) instanceof Template, "default config should define " . $type->value);
 }
-$assert($default->getConfig()->getKillerFallback() === "the server", "default killer fallback is incorrect");
 
 $custom = $loader->load([
-	"config-version" => 2,
-	"messages" => [
-		"join" => "+ {display_name}",
-		"quit" => false,
-		"death" => [
-			"broadcast" => "{player} died to {killer}",
-			"killer-fallback" => "nature"
-		]
-	]
+	"config-version" => 3,
+	"messages.join" => "+ {PLAYER}",
+	"messages.death.kill" => "{PLAYER} died to {KILLER}"
 ]);
 $customConfig = $custom->getConfig();
-$assert($customConfig->getAlert(AlertType::Join) instanceof Template, "join template was not loaded");
-$assert($customConfig->getAlert(AlertType::Quit) === false, "quit broadcast should be hidden");
-$assert($customConfig->getKillerFallback() === "nature", "configured killer fallback was not loaded");
+$assert($customConfig->getAlert(AlertType::Join) instanceof Template, "flat join template was not loaded");
+$assert($customConfig->getAlert(AlertType::DeathKill) instanceof Template, "flat death template was not loaded");
+$assert($customConfig->getAlert(AlertType::Quit) === null, "missing message should leave the server default in place");
 
 $versionRejected = false;
 try{
-	$loader->load(["config-version" => 1]);
+	$loader->load(["config-version" => 2]);
 }catch(ConfigException){
 	$versionRejected = true;
 }
-$assert($versionRejected, "config-version 1 should be rejected");
+$assert($versionRejected, "config-version 2 should be rejected");
 
 fwrite(STDOUT, "CustomAlerts checks passed.\n");

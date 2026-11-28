@@ -1,12 +1,21 @@
-config-version: 2
+config-version: 3
 
-# Set messages in the language shared by everyone on the server.
-# Remove a key to keep the server's default broadcast. Set it to false to hide it.
-messages:
-  join: "§8[§a+§8] §f{display_name} §7joined the server"
-  quit: "§8[§c-§8] §f{display_name} §7left the server"
-  death:
-    broadcast: "§8[§cX§8] §f{player} §7died in §f{world}"
-    killer-fallback: "the server"
-  kick:
-    broadcast: "§8[§e!§8] §f{display_name} §7was disconnected"
+messages.join: "&2[{TIME}] &a{PLAYER}&e joined the game."
+messages.first_join: "&2[{TIME}] &a{PLAYER}&d joined the game for the first time."
+messages.quit: "&4[{TIME}] &c{PLAYER}&e has left the game"
+messages.kick: "&8[&e!&8] &f{PLAYER} &7was disconnected"
+messages.world_change: "&2[{TIME}] &a{PLAYER}&e moved from &c{ORIGIN}&e to &a{TARGET}"
+messages.death: "&c{PLAYER} died"
+messages.death.contact: "&cOops! {PLAYER} was killed by {BLOCK}"
+messages.death.kill: "&9{PLAYER} &ewas killed by &c{KILLER}"
+messages.death.projectile: "&c{PLAYER} was killed by {KILLER} by arrow"
+messages.death.suffocation: "&c{PLAYER} suffocated"
+messages.death.fall: "&c{PLAYER} fell from a high place"
+messages.death.fire: "&c{PLAYER} went up in flames"
+messages.death.on_fire: "&c{PLAYER} burned"
+messages.death.lava: "&c{PLAYER} tried to swim in lava"
+messages.death.drowning: "&c{PLAYER} drowned"
+messages.death.explosion: "&c{PLAYER} exploded"
+messages.death.void: "&c{PLAYER} fell into the void"
+messages.death.suicide: "&c{PLAYER} committed suicide"
+messages.death.magic: "&c{PLAYER} was killed by a spell"

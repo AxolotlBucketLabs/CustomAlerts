@@ -25,11 +25,12 @@ final class ConnectionListener implements Listener{
 	 * @priority HIGHEST
 	 */
 	public function onJoin(PlayerJoinEvent $event) : void{
-		if($this->alerts->isHidden(AlertType::Join)){
-			$event->setJoinMessage("");
-			return;
+		$player = $event->getPlayer();
+		$type = $player->hasPlayedBefore() ? AlertType::Join : AlertType::FirstJoin;
+		$message = $this->alerts->render(AlertContext::forPlayer($type, $player));
+		if($message === null && $type === AlertType::FirstJoin){
+			$message = $this->alerts->render(AlertContext::forPlayer(AlertType::Join, $player));
 		}
-		$message = $this->alerts->render(AlertContext::forPlayer(AlertType::Join, $event->getPlayer()));
 		if($message !== null){
 			$event->setJoinMessage($message);
 		}
@@ -47,10 +48,6 @@ final class ConnectionListener implements Listener{
 			return;
 		}
 
-		if($this->alerts->isHidden(AlertType::Quit)){
-			$event->setQuitMessage("");
-			return;
-		}
 		$message = $this->alerts->render(AlertContext::forPlayer(AlertType::Quit, $player));
 		if($message !== null){
 			$event->setQuitMessage($message);
@@ -61,11 +58,7 @@ final class ConnectionListener implements Listener{
 	 * @priority HIGHEST
 	 */
 	public function onKick(PlayerKickEvent $event) : void{
-		if($this->alerts->isHidden(AlertType::KickBroadcast)){
-			$message = "";
-		}else{
-			$message = $this->alerts->render(AlertContext::forPlayer(AlertType::KickBroadcast, $event->getPlayer()));
-		}
+		$message = $this->alerts->render(AlertContext::forPlayer(AlertType::KickBroadcast, $event->getPlayer()));
 		if($message === null){
 			return;
 		}

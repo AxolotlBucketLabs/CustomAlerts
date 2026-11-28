@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace AxolotlBucketLabs\CustomAlerts\alert;
 
 use pocketmine\player\Player;
+use function count;
+use function date;
 
 final readonly class AlertContext{
 	/**
@@ -19,14 +21,12 @@ final readonly class AlertContext{
 	 * @param array<string, string> $values
 	 */
 	public static function forPlayer(AlertType $type, Player $player, array $values = []) : self{
-		$position = $player->getPosition();
+		$server = $player->getServer();
 		return new self($type, $values + [
-			"player" => $player->getName(),
-			"display_name" => $player->getDisplayName(),
-			"world" => $player->getWorld()->getFolderName(),
-			"x" => (string) $position->getFloorX(),
-			"y" => (string) $position->getFloorY(),
-			"z" => (string) $position->getFloorZ()
+			"PLAYER" => $player->getName(),
+			"TIME" => date("H:i:s"),
+			"TOTALPLAYERS" => (string) count($server->getOnlinePlayers()),
+			"MAXPLAYERS" => (string) $server->getMaxPlayers()
 		]);
 	}
 
