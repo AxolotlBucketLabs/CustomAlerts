@@ -1,7 +1,3 @@
-# String: use a custom message.
-# false: hide this broadcast.
-# Missing key: keep PocketMine's message, use a fallback, or disable an optional alert.
-# Example: messages.quit: false hides the quit broadcast.
 messages.join: "&8[&a+&8] &2[{TIME}] &a{PLAYER}&e joined the game."
 messages.first_join: "&8[&a+&8] &2[{TIME}] &a{PLAYER}&d joined the game for the first time."
 messages.quit: "&8[&c-&8] &4[{TIME}] &c{PLAYER}&e has left the game."
