@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use AxolotlBucketLabs\CustomAlerts\alert\AlertConfig;
 use AxolotlBucketLabs\CustomAlerts\alert\AlertType;
-use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 
 $root = dirname(__DIR__);
@@ -36,18 +36,16 @@ $assert($named->renderNamed(static fn(string $name) : ?string => ["PLAYER" => "S
 $assert(AlertType::isBuiltInPlaceholder("PLAYER") && AlertType::isBuiltInPlaceholder("KILLER"), "built-in placeholder names were not recognized");
 $assert(!AlertType::isBuiltInPlaceholder("RANK"), "unknown placeholder names should remain distinct from built-in placeholders");
 
-$loader = new ConfigLoader();
-$default = $loader->load($config);
+$default = AlertConfig::from($config);
 $assert($default->getWarnings() === [], "default config should load without warnings");
 foreach(AlertType::cases() as $type){
-	$assert($default->getConfig()->getAlert($type) instanceof Template, "default config should define " . $type->value);
+	$assert($default->getAlert($type) instanceof Template, "default config should define " . $type->value);
 }
 
-$custom = $loader->load([
+$customConfig = AlertConfig::from([
 	"messages.join" => "+ {PLAYER}",
 	"messages.death.kill" => "{PLAYER} died to {KILLER}"
 ]);
-$customConfig = $custom->getConfig();
 $assert($customConfig->getAlert(AlertType::Join) instanceof Template, "flat join template was not loaded");
 $assert($customConfig->getAlert(AlertType::DeathKill) instanceof Template, "flat death template was not loaded");
 $assert($customConfig->getAlert(AlertType::Quit) === null, "missing message should leave the server default in place");

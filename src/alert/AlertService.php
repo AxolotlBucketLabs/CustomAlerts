@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AxolotlBucketLabs\CustomAlerts\alert;
 
-use AxolotlBucketLabs\CustomAlerts\config\AlertsConfig;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 use Logger;
 use pocketmine\utils\TextFormat;
@@ -15,7 +14,7 @@ final class AlertService{
 
 	public function __construct(
 		private readonly Logger $logger,
-		private AlertsConfig $config
+		private readonly AlertConfig $config
 	){}
 
 	public function render(AlertContext $context) : ?string{
