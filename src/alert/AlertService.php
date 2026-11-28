@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AxolotlBucketLabs\CustomAlerts\alert;
 
 use AxolotlBucketLabs\CustomAlerts\config\AlertsConfig;
-use AxolotlBucketLabs\CustomAlerts\template\PlaceholderRegistry;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 use Logger;
 
@@ -14,18 +13,13 @@ final class AlertService{
 	private array $reportedPlaceholders = [];
 
 	public function __construct(
-		private readonly PlaceholderRegistry $placeholders,
-		private readonly Logger              $logger,
-		private AlertsConfig                 $config
+		private readonly Logger $logger,
+		private AlertsConfig $config
 	){}
 
 	public function setConfig(AlertsConfig $config) : void{
 		$this->config = $config;
 		$this->reportedPlaceholders = [];
-	}
-
-	public function isConfigured(AlertType $type) : bool{
-		return $this->config->getAlert($type) !== null;
 	}
 
 	public function getKillerFallback() : string{
@@ -42,22 +36,18 @@ final class AlertService{
 			return null;
 		}
 
-		$message = $template->renderNamed(fn(string $name) : ?string => $context->getValue($name) ?? $this->resolveExternal($name, $context));
-		$event = new AlertRenderEvent($context, $message);
-		$event->call();
-		return $event->isCancelled() ? null : $event->getMessage();
-	}
+		return $template->renderNamed(function(string $name) use($context) : ?string{
+			$value = $context->getValue($name);
+			if($value !== null){
+				return $value;
+			}
 
-	private function resolveExternal(string $name, AlertContext $context) : ?string{
-		if($this->placeholders->isRegistered($name)){
-			return $this->placeholders->resolve($name, $context);
-		}
-
-		$path = $context->getType()->value;
-		if(!isset($this->reportedPlaceholders["$path:$name"])){
-			$this->reportedPlaceholders["$path:$name"] = true;
-			$this->logger->warning("Template '$path' uses unknown placeholder '{{$name}}'. It was left unchanged.");
-		}
-		return null;
+			$path = $context->getType()->value;
+			if(!isset($this->reportedPlaceholders["$path:$name"])){
+				$this->reportedPlaceholders["$path:$name"] = true;
+				$this->logger->warning("Template '$path' uses unknown placeholder '{{$name}}'. It was left unchanged.");
+			}
+			return null;
+		});
 	}
 }

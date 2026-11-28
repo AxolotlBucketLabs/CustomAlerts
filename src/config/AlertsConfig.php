@@ -13,10 +13,8 @@ final readonly class AlertsConfig{
 	 * @param array<string, Template|false> $alerts
 	 */
 	public function __construct(
-		private array                $alerts,
-		private string               $killerFallback,
-		private PacketOverrides      $packetOverrides,
-		private ResourcePackSettings $resourcePack
+		private array $alerts,
+		private string $killerFallback
 	){}
 
 	public function getAlert(AlertType $type) : Template|false|null{
@@ -29,13 +27,5 @@ final readonly class AlertsConfig{
 
 	public function getKillerFallback() : string{
 		return $this->killerFallback;
-	}
-
-	public function getPacketOverrides() : PacketOverrides{
-		return $this->packetOverrides;
-	}
-
-	public function getResourcePack() : ResourcePackSettings{
-		return $this->resourcePack;
 	}
 }

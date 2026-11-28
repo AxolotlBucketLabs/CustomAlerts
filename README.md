@@ -1,132 +1,55 @@
 # CustomAlerts
 
-CustomAlerts lets Axolotl-PM server owners change player-facing messages from YAML and full locale files. It uses server events for join, quit, chat, death, kick and login messages, packet overrides for recognized client translation keys, and a generated Bedrock resource pack for client language strings.
+CustomAlerts replaces or hides selected server-wide system broadcasts. It supports join, quit, death and kick broadcasts through Axolotl-PM events. Every player receives the same configured message.
 
 [![CI](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml/badge.svg)](https://github.com/AxolotlBucketLabs/CustomAlerts/actions/workflows/ci.yml) [![License](https://img.shields.io/github/license/AxolotlBucketLabs/CustomAlerts)](LICENSE) [![Discord](https://img.shields.io/discord/1568295845374206052?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/Pk4FrNvHnM)
 
 ## Requirements and installation
 
-- Axolotl-PM API `5.0.0` is the declared manifest floor. CI runs against Axolotl-PM `5.51.2` on PHP `8.4`.
-- PHP `^8.4` with the `yaml` and `zip` extensions.
-- Packet overrides were checked against Axolotl-PM commit [`77f832d`](https://github.com/axolotl-pm/PocketMine-MP/commit/77f832da28e5b52996207ca5a8d8b54fd827b77e) with BedrockProtocol `64.0.0+bedrock-1.26.60`.
+- The manifest declares Axolotl-PM API `5.0.0`. CI targets Axolotl-PM `5.51.2` with PHP `8.4`.
+- PHP `^8.4` with the `yaml` extension.
 
-For local development, place the project folder in `plugins/`. To build a PHAR on the server, install [AxolotlBucketLabs DevTools v4.1.1](https://github.com/AxolotlBucketLabs/DevTools/releases/tag/v4.1.1) and run:
+For folder development, install DevTools as `plugins/DevTools.phar` and place the CustomAlerts project folder under `plugins/`. Build a standalone plugin PHAR with:
 
 ```text
 /devtools build plugin CustomAlerts
 ```
 
-GitHub Actions builds, validates and uploads a PHAR with DevTools v4.1.1. Download the artifact from the workflow run, then copy `CustomAlerts.phar` to the server's `plugins/` directory and start the server once. Edit `plugin_data/CustomAlerts/config.yml`, then run `/customalerts reload`. A `ca` alias is available. The reload permission is `customalerts.command.reload` and defaults to operators.
-
-After a successful reload the sender sees how many messages and packet overrides are active and whether the resource pack was built. Configuration warnings are listed in chat, up to ten of them, and all of them are also written to the console. A failed reload shows the error and keeps the previous configuration running.
+GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or development folder, start the server, then edit `plugin_data/CustomAlerts/config.yml`. Run `/customalerts reload` to apply changes. The `ca` alias is available. The reload permission is `customalerts.command.reload` and defaults to operators.
 
 ## Configuration
 
-The configuration uses `config-version: 2`. An older `config.yml` is rejected with an error, so move it aside to generate the new default.
-
-Each message is a single key. A missing key keeps the server's message, a string replaces it, and `false` hides it. Only `join`, `quit`, `chat`, `death.broadcast` and `kick.broadcast` can be hidden. Hiding chat cancels the chat event for everyone.
-
-The default `config.yml` sets every message to an English template, so installing the plugin changes these messages right away. Set `custom-messages: false` to turn off every `messages.*` entry at once and keep the server's own messages. Packet overrides and the resource pack are not affected by this switch.
+The configuration uses `config-version: 2`. Version 1 configuration files are not migrated. Move an old file aside to generate the new defaults, then reapply its message text.
 
 ```yaml
 config-version: 2
 messages:
   join: "§8[§a+§8] §f{display_name} §7joined the server"
-  quit: false
+  quit: "§8[§c-§8] §f{display_name} §7left the server"
   death:
-    screen: "§cYou died."
-  pre-login:
-    banned:
-      reason: "§cYou are banned from this server."
+    broadcast: "§8[§cX§8] §f{player} §7died in §f{world}"
+    killer-fallback: "the server"
+  kick:
+    broadcast: "§8[§e!§8] §f{display_name} §7was disconnected"
 ```
 
-The available paths are `join`, `quit`, `chat`, `death.broadcast`, `death.screen`, `kick.broadcast`, `kick.reason`, `kick.screen`, `login` and `pre-login.<server-full|whitelist|banned>.<reason|screen>`, all under `messages`. The login message applies only when another plugin has already rejected the login, and pre-login messages apply only to a rejection that is already set.
+Each message can be removed to keep the server default or set to `false` to hide that broadcast. Templates use Bedrock `§` color codes. `messages.death.killer-fallback` supplies `{killer}` when the death cause has no player or mob attacker.
 
-The sample templates in `resources/config.yml` use a consistent color style. Bedrock formatting codes such as `§8`, `§a` and `§f` pass through in event, packet and disconnect messages.
-
-Named event placeholders:
+The available placeholders are:
 
 | Placeholder | Value |
 | --- | --- |
-| `{player}` | Player username |
-| `{display_name}` | Player display name |
-| `{world}` | World folder name |
-| `{message}` | Chat text |
-| `{reason}` | Existing disconnect or quit reason where available |
-| `{screen}` | Existing disconnect screen message |
-| `{killer}` | Attacking player's display name, the attacking mob's name, or `messages.death.killer-fallback` (shipped config default `the server`) |
-| `{x}`, `{y}`, `{z}` | Player block coordinates |
+| `{player}` | Player username. |
+| `{display_name}` | Player display name. |
+| `{world}` | World folder name. |
+| `{x}`, `{y}`, `{z}` | Player block coordinates. |
+| `{killer}` | Attacking player's display name, attacking mob name, or the configured fallback. |
 
-Pre-login messages only have `{player}`, because no player object exists yet. A placeholder that belongs to another message, such as `{killer}` in `join`, produces a warning on load. Unknown placeholders are left unchanged and logged once, unless another plugin registers them through the API below.
+The plugin leaves player chat, messages sent to one player, client interface translations, console output and startup messages unchanged. It does not select a different language for each client. Write the configured templates in the language you want all players to see.
 
-For a client-side translation packet, use the numeric argument placeholders from the source key in the same `{%0}` form as locale files. For example:
+## Commands and permissions
 
-```yaml
-packets:
-  text:
-    "death.attack.generic": "§8[§cX§8] §f{%0} §7died"
-```
-
-Keys from [`translation-catalog.json`](resources/translation-catalog.json) have their placeholders checked against the source translation, and server-side keys are rejected. Keys missing from the catalog are accepted with a warning and are not checked. Overrides apply when a matching key is still present in a `TextPacket` with client translation enabled. Translation packets become plain messages, while popup and jukebox popup packets keep their packet type. If the server forces its own language or sends an already-rendered string, that key cannot be recovered from the packet and the override is skipped.
-
-Disconnect packet messages are already rendered strings. They can be replaced only by matching the exact message currently sent by the server:
-
-```yaml
-packets:
-  disconnect:
-    "You are banned from this server.": "§cYou cannot join this server."
-```
-
-### Full locale files
-
-The plugin includes locale files for 14 Bedrock languages. On first start it copies them to `plugin_data/CustomAlerts/translations/`. Edit those data-folder copies and run `/customalerts reload` to rebuild the pack. The plugin does not overwrite your edits during updates. The files preserve the translation coverage of the pinned Axolotl-PM source, so some languages contain fewer client translations than others. The pack declares language names so players can select custom locale IDs such as Latvian. Missing entries are not replaced with English text. The client keeps its normal translation for keys the pack does not override.
-
-Enable the resource pack to offer the client-side entries from those files:
-
-```yaml
-resource-pack:
-  enabled: true
-  required: false
-  translations: {}
-```
-
-Locale files use PocketMine's `key=value` format and `{%0}`-style placeholders. The pack builder converts placeholders to Bedrock `.lang` syntax. Inline `resource-pack.translations` entries remain available and override the same key from a locale file.
-
-Locale files retain server-side entries for reference, but a plugin cannot replace the server's global `Language` object. CustomAlerts leaves server-side entries and catalogued entries with mismatched placeholders out of the resource pack. Keys that are not in the catalog, such as other Bedrock client strings, are packaged without placeholder checks. Supported event messages remain configurable under `messages.*`. Players who are already connected need to reconnect to receive an updated pack. `required: true` asks players to accept this pack. Older generated packs in the data folder are removed when a new one is built.
-
-## Plugin API
-
-Other plugins can get the API from the plugin manager. Declare `softdepend: [CustomAlerts]` or `depend: [CustomAlerts]` so CustomAlerts loads first.
-
-```php
-use AxolotlBucketLabs\CustomAlerts\alert\AlertContext;
-use AxolotlBucketLabs\CustomAlerts\CustomAlerts;
-
-$plugin = $this->getServer()->getPluginManager()->getPlugin("CustomAlerts");
-if($plugin instanceof CustomAlerts){
-	$plugin->getPlaceholders()->register($this, "rank", fn(AlertContext $context) : ?string => $this->getRankName($context->getPlayerName()));
-}
-```
-
-Registered placeholders can be used in any `messages.*` template. Built-in names cannot be registered. Register from `onEnable`, because the owning plugin must be enabled. Its placeholders are removed automatically when it is disabled. `AlertContext::getPlayer()` is `null` for pre-login messages.
-
-Listen for `AxolotlBucketLabs\CustomAlerts\alert\AlertRenderEvent` to change a rendered message before it is applied. Cancelling the event keeps the server's original message.
-
-```php
-public function onAlertRender(AlertRenderEvent $event) : void{
-	if($event->getType() === AlertType::Join && $event->getPlayer()?->hasPermission("myplugin.vip") === true){
-		$event->setMessage("§6VIP " . $event->getMessage());
-	}
-}
-```
-
-Call `CustomAlerts::reloadAlerts()` to reload the configuration from code. It returns a `ReloadResult` with `isSuccessful()`, `getError()`, `getWarnings()`, the loaded `getConfig()` and the built `getLanguagePack()`.
-
-## Coverage and limitations
-
-The translation catalog records all 658 keys in the audited Axolotl-PM `eng.ini` and the placeholder indices for each key. It contains 306 server-side and 352 client-side keys. `pocketmine.*` entries are translated by the server before many packets are sent, so they are only customizable through a supported semantic event adapter. Other entries can be intercepted if they remain in an outgoing translation packet, or customized with a Bedrock resource pack if rendered by the client. See [translation coverage](docs/translation-coverage.md).
-
-CustomAlerts does not replace the server's global `Language` object. It cannot generically alter startup or setup text, console logs, or server-translated output after the source key is gone. Packet classes live in the internal `pocketmine\network\mcpe` namespace. Their behavior was checked against the exact Axolotl-PM revision above, so the manifest's API `5.0.0` floor does not claim packet compatibility with every API 5 release.
+`/customalerts reload` reloads the configuration. It requires `customalerts.command.reload`, which defaults to operators.
 
 ## Development checks
 
@@ -135,14 +58,6 @@ composer test
 composer analyse
 ```
 
-GitHub Actions also builds and uploads the validated PHAR with DevTools v4.1.1.
-
-Regenerate the catalog when changing the server source revision:
-
-```sh
-php tools/generate-translation-catalog.php /path/to/PocketMine-MP/resources/translations/eng.ini resources/translation-catalog.json
-```
-
 ## License
 
-CustomAlerts code is licensed under the MIT License. The bundled locale data has its own attribution and LGPL license in [`resources/translations`](resources/translations/NOTICE.md).
+CustomAlerts is licensed under the MIT License.

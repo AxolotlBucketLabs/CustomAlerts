@@ -1,48 +1,12 @@
 config-version: 2
 
-# Set false to turn off every message below and keep the server's own messages.
-custom-messages: true
-
-# Messages use Bedrock § color codes. Remove a key to keep the server's message for it.
-# Set false to hide join, quit, chat, death broadcast or kick broadcast.
+# Set messages in the language shared by everyone on the server.
+# Remove a key to keep the server's default broadcast. Set it to false to hide it.
 messages:
   join: "§8[§a+§8] §f{display_name} §7joined the server"
   quit: "§8[§c-§8] §f{display_name} §7left the server"
-  chat: "§8[§bCHAT§8] §f{display_name} §8» §7{message}"
   death:
     broadcast: "§8[§cX§8] §f{player} §7died in §f{world}"
-    screen: "§cYou died."
-    # {killer} value when the player was not killed by another player or a mob.
     killer-fallback: "the server"
   kick:
     broadcast: "§8[§e!§8] §f{display_name} §7was disconnected"
-    reason: "§cDisconnected: §f{reason}"
-    screen: "§cYou were disconnected from the server."
-  login: "§cYou cannot join right now. §7Please try again later."
-  pre-login:
-    server-full:
-      reason: "§cThe server is full."
-      screen: "§cThe server is full. §7Please try again later."
-    whitelist:
-      reason: "§cYou are not on the whitelist."
-      screen: "§cYou are not on the whitelist."
-    banned:
-      reason: "§cYou are banned from this server."
-      screen: "§cYou are banned from this server."
-
-# Overrides for translation keys still present in outgoing TextPackets.
-# Numeric placeholders refer to packet parameters: {%0}, {%1}, ...
-packets:
-  text:
-    # "death.attack.generic": "§8[§cX§8] §f{%0} §7died"
-  # DisconnectPacket contains already-rendered text, so match the exact current server-language message.
-  disconnect:
-    # "You are banned from this server.": "§cYou cannot join this server."
-
-# Bundled locale files are copied to plugin_data/CustomAlerts/translations on first start.
-# Enable the pack to offer client-side keys from locale files to players.
-# Inline translations below take precedence over values in those files.
-resource-pack:
-  enabled: false
-  required: false
-  translations: {}

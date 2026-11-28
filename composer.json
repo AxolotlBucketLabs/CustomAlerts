@@ -1,11 +1,10 @@
 {
 	"name": "axolotlbucketlabs/customalerts",
-	"description": "Customize player-facing Axolotl-PM and Bedrock language messages from configuration.",
+	"description": "Customize selected server-wide system broadcasts from configuration.",
 	"type": "project",
 	"license": "MIT",
 	"require": {
 		"php": "^8.4",
-		"ext-zip": "*",
 		"ext-yaml": "*",
 		"axolotl-pm/pocketmine-mp": "5.51.2"
 	},

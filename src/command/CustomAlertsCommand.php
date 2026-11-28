@@ -49,19 +49,9 @@ final class CustomAlertsCommand extends Command implements PluginOwned{
 
 	private function sendSummary(CommandSender $sender, ReloadResult $result) : void{
 		$config = $result->getConfig();
-		if($config === null){
-			return;
+		if($config !== null){
+			$sender->sendMessage("§7Configured broadcasts: §f" . $config->countAlerts());
 		}
-		$overrides = $config->getPacketOverrides();
-		$sender->sendMessage("§7Messages: §f" . $config->countAlerts() . " §8| §7Packet overrides: §f" . count($overrides->getText()) . " §7text, §f" . count($overrides->getDisconnect()) . " §7disconnect");
-
-		$pack = $result->getLanguagePack();
-		$packStatus = match(true){
-			$pack !== null => "§f" . $pack->getTranslationCount() . " §7translations in §f" . $pack->getLocaleCount() . " §7locales",
-			$config->getResourcePack()->isEnabled() => "§cfailed, see the console",
-			default => "§foff"
-		};
-		$sender->sendMessage("§7Resource pack: " . $packStatus);
 	}
 
 	/**

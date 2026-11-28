@@ -22,26 +22,22 @@ final readonly class DeathListener implements Listener{
 	 * @priority HIGHEST
 	 */
 	public function onDeath(PlayerDeathEvent $event) : void{
+		if($this->alerts->isHidden(AlertType::DeathBroadcast)){
+			$event->setDeathMessage("");
+			return;
+		}
+
 		$player = $event->getPlayer();
 		$cause = $player->getLastDamageCause();
 		$damager = $cause instanceof EntityDamageByEntityEvent ? $cause->getDamager() : null;
-		$values = ["killer" => match(true){
+		$killer = match(true){
 			$damager instanceof Player => $damager->getDisplayName(),
 			$damager instanceof Living => $damager->getName(),
 			default => $this->alerts->getKillerFallback()
-		}];
-
-		if($this->alerts->isHidden(AlertType::DeathBroadcast)){
-			$event->setDeathMessage("");
-		}else{
-			$broadcast = $this->alerts->render(AlertContext::forPlayer(AlertType::DeathBroadcast, $player, $values));
-			if($broadcast !== null){
-				$event->setDeathMessage($broadcast);
-			}
-		}
-		$screen = $this->alerts->render(AlertContext::forPlayer(AlertType::DeathScreen, $player, $values));
-		if($screen !== null){
-			$event->setDeathScreenMessage($screen);
+		};
+		$message = $this->alerts->render(AlertContext::forPlayer(AlertType::DeathBroadcast, $player, ["killer" => $killer]));
+		if($message !== null){
+			$event->setDeathMessage($message);
 		}
 	}
 }

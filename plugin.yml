@@ -5,8 +5,8 @@ version: 2.0.0
 api: [5.0.0]
 author: NhanAZ
 authors: [AxolotlBucketLabs]
-description: Customize player-facing Axolotl-PM and Bedrock language messages from configuration.
-extensions: [yaml, zip]
+description: Customize selected server-wide system broadcasts from configuration.
+extensions: [yaml]
 permissions:
   customalerts.command.reload:
     description: Allows reloading CustomAlerts configuration
