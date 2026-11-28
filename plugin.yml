@@ -3,8 +3,7 @@ main: AxolotlBucketLabs\CustomAlerts\CustomAlerts
 src-namespace-prefix: AxolotlBucketLabs\CustomAlerts
 version: 2.0.0
 api: [5.0.0]
-author: NhanAZ
-authors: [AxolotlBucketLabs]
+author: AxolotlBucketLabs
 description: Customize selected server-wide system broadcasts from configuration.
 extensions: [yaml]
 permissions:
