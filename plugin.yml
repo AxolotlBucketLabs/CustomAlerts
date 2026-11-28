@@ -1,18 +1,9 @@
 name: CustomAlerts
-main: NhanAZ\CustomAlerts\Main
-version: 1.0.0
+main: AxolotlBucketLabs\CustomAlerts\CustomAlerts
+src-namespace-prefix: AxolotlBucketLabs\CustomAlerts
+version: 2.0.0
 api: [5.0.0]
-author: NhanAZ
-authors: [AxolotlBucketLabs]
-description: Customize player-facing PocketMine and Bedrock language messages from configuration.
-extensions: [zip]
-commands:
-  customalerts:
-    description: Reload CustomAlerts configuration
-    usage: "/customalerts reload"
-    permission: customalerts.command.reload
-    aliases: [ca]
-permissions:
-  customalerts.command.reload:
-    description: Allows reloading CustomAlerts configuration
-    default: op
+author: AxolotlBucketLabs
+authors: [NhanAZ, pupggers]
+description: Customize selected server-wide system broadcasts from configuration.
+extensions: [yaml]
