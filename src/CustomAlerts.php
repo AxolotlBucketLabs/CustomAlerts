@@ -6,7 +6,6 @@ namespace AxolotlBucketLabs\CustomAlerts;
 
 use AxolotlBucketLabs\CustomAlerts\alert\AlertService;
 use AxolotlBucketLabs\CustomAlerts\command\CustomAlertsCommand;
-use AxolotlBucketLabs\CustomAlerts\config\ConfigException;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoadResult;
 use AxolotlBucketLabs\CustomAlerts\listener\ConnectionListener;
@@ -25,7 +24,7 @@ final class CustomAlerts extends PluginBase{
 
 		try{
 			$loaded = $this->loadAlertsConfig();
-		}catch(ConfigLoadException|ConfigException $e){
+		}catch(ConfigLoadException $e){
 			$this->getLogger()->error("Could not load config.yml: " . $e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return;
@@ -43,7 +42,7 @@ final class CustomAlerts extends PluginBase{
 	public function reloadAlerts() : ReloadResult{
 		try{
 			$loaded = $this->loadAlertsConfig();
-		}catch(ConfigLoadException|ConfigException $e){
+		}catch(ConfigLoadException $e){
 			$this->getLogger()->error("Could not load config.yml: " . $e->getMessage());
 			return ReloadResult::failed($e->getMessage());
 		}
@@ -54,7 +53,7 @@ final class CustomAlerts extends PluginBase{
 	}
 
 	/**
-	 * @throws ConfigLoadException|ConfigException
+	 * @throws ConfigLoadException
 	 */
 	private function loadAlertsConfig() : ConfigLoadResult{
 		$this->reloadConfig();

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use AxolotlBucketLabs\CustomAlerts\alert\AlertType;
-use AxolotlBucketLabs\CustomAlerts\config\ConfigException;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 
@@ -26,7 +25,6 @@ $namespacePrefix = $manifest["src-namespace-prefix"] ?? null;
 if(!is_string($mainClass) || !is_string($namespacePrefix)){
 	throw new RuntimeException("plugin.yml is missing its main class or namespace prefix");
 }
-$assert(($config["config-version"] ?? null) === ConfigLoader::VERSION, "config.yml has an unsupported version");
 $assert(isset($config["messages.join"]) && !isset($config["messages"]["join"]), "message keys should be flat");
 $mainRelative = substr($mainClass, strlen($namespacePrefix) + 1);
 $assert(is_file($root . "/src/" . str_replace("\\", "/", $mainRelative) . ".php"), "plugin main class path does not match plugin.yml");
@@ -46,7 +44,6 @@ foreach(AlertType::cases() as $type){
 }
 
 $custom = $loader->load([
-	"config-version" => 3,
 	"messages.join" => "+ {PLAYER}",
 	"messages.death.kill" => "{PLAYER} died to {KILLER}"
 ]);
@@ -54,13 +51,5 @@ $customConfig = $custom->getConfig();
 $assert($customConfig->getAlert(AlertType::Join) instanceof Template, "flat join template was not loaded");
 $assert($customConfig->getAlert(AlertType::DeathKill) instanceof Template, "flat death template was not loaded");
 $assert($customConfig->getAlert(AlertType::Quit) === null, "missing message should leave the server default in place");
-
-$versionRejected = false;
-try{
-	$loader->load(["config-version" => 2]);
-}catch(ConfigException){
-	$versionRejected = true;
-}
-$assert($versionRejected, "config-version 2 should be rejected");
 
 fwrite(STDOUT, "CustomAlerts checks passed.\n");

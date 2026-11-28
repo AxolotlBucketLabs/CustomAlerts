@@ -1,5 +1,3 @@
-config-version: 3
-
 messages.join: "&2[{TIME}] &a{PLAYER}&e joined the game."
 messages.first_join: "&2[{TIME}] &a{PLAYER}&d joined the game for the first time."
 messages.quit: "&4[{TIME}] &c{PLAYER}&e has left the game"

@@ -19,10 +19,9 @@ GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or 
 
 ## Configuration
 
-Configuration version 3 uses one flat key for each message. Version 2 and older files are not migrated. Move an old file aside to generate the new defaults. A missing key normally keeps the server's default message. A missing death-cause key uses `messages.death`, and a first join without `messages.first_join` uses `messages.join`. If the attacker cannot be identified, the generic death message is used.
+The configuration uses one flat key for each message. Old nested `messages:` settings are not read. Copy any message text you want to keep into the flat keys below. A missing key normally keeps the server's default message. A missing death-cause key uses `messages.death`, and a first join without `messages.first_join` uses `messages.join`. If the attacker cannot be identified, the generic death message is used.
 
 ```yaml
-config-version: 3
 messages.join: "&2[{TIME}] &a{PLAYER}&e joined the game."
 messages.first_join: "&2[{TIME}] &a{PLAYER}&d joined the game for the first time."
 messages.quit: "&4[{TIME}] &c{PLAYER}&e has left the game"

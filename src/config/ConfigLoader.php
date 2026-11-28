@@ -8,28 +8,18 @@ use AxolotlBucketLabs\CustomAlerts\alert\AlertType;
 use AxolotlBucketLabs\CustomAlerts\template\Template;
 use function array_key_exists;
 use function in_array;
-use function is_int;
 use function is_string;
 use function preg_match;
 use function trim;
 
 final class ConfigLoader{
-	public const int VERSION = 3;
-
 	/** @var list<string> */
 	private array $warnings = [];
 
 	/**
 	 * @param array<mixed> $data
-	 * @throws ConfigException
 	 */
 	public function load(array $data) : ConfigLoadResult{
-		$version = $data["config-version"] ?? null;
-		if($version !== self::VERSION){
-			$found = is_int($version) ? (string) $version : "missing";
-			throw new ConfigException("Unsupported config-version ($found), expected " . self::VERSION . ". Move the old config.yml aside to generate a new one.");
-		}
-
 		$this->warnings = [];
 		$alerts = [];
 		foreach(AlertType::cases() as $type){
