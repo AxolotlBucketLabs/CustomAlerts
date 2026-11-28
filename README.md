@@ -15,7 +15,7 @@ For folder development, install DevTools as `plugins/DevTools.phar` and place th
 /devtools build plugin CustomAlerts
 ```
 
-GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or development folder, start the server, then edit `plugin_data/CustomAlerts/config.yml`. Run `/customalerts reload` to apply changes. The `ca` alias is available. The reload permission is `customalerts.command.reload` and defaults to operators.
+GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or development folder, start the server, then edit `plugin_data/CustomAlerts/config.yml`. Restart the server to apply configuration changes.
 
 ## Configuration
 
@@ -58,10 +58,6 @@ Use `&` color codes in message strings. Available placeholders depend on the mes
 | `{KILLER}` | Attacking player or mob name. |
 
 The plugin leaves chat, messages sent to one player, server-list MOTD and startup output unchanged. It does not choose a different language for each client. Write message strings in the language you want everyone to see.
-
-## Commands and permissions
-
-`/customalerts reload` reloads the configuration. It requires `customalerts.command.reload`, which defaults to operators.
 
 ## Development checks
 

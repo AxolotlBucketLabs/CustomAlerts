@@ -18,11 +18,6 @@ final class AlertService{
 		private AlertsConfig $config
 	){}
 
-	public function setConfig(AlertsConfig $config) : void{
-		$this->config = $config;
-		$this->reportedPlaceholders = [];
-	}
-
 	public function render(AlertContext $context) : ?string{
 		$template = $this->config->getAlert($context->getType());
 		if($template === false){

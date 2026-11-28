@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AxolotlBucketLabs\CustomAlerts;
 
 use AxolotlBucketLabs\CustomAlerts\alert\AlertService;
-use AxolotlBucketLabs\CustomAlerts\command\CustomAlertsCommand;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoader;
 use AxolotlBucketLabs\CustomAlerts\config\ConfigLoadResult;
 use AxolotlBucketLabs\CustomAlerts\listener\ConnectionListener;
@@ -36,20 +35,6 @@ final class CustomAlerts extends PluginBase{
 		$manager->registerEvents(new ConnectionListener($this->alerts), $this);
 		$manager->registerEvents(new DeathListener($this->alerts), $this);
 		$manager->registerEvents(new WorldChangeListener($this->alerts), $this);
-		$this->getServer()->getCommandMap()->register($this->getName(), new CustomAlertsCommand($this));
-	}
-
-	public function reloadAlerts() : ReloadResult{
-		try{
-			$loaded = $this->loadAlertsConfig();
-		}catch(ConfigLoadException $e){
-			$this->getLogger()->error("Could not load config.yml: " . $e->getMessage());
-			return ReloadResult::failed($e->getMessage());
-		}
-
-		$config = $loaded->getConfig();
-		$this->alerts->setConfig($config);
-		return ReloadResult::loaded($config, $loaded->getWarnings());
 	}
 
 	/**
