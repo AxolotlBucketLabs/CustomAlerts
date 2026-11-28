@@ -29,8 +29,12 @@ final class ConfigLoader{
 			}
 
 			$value = $data[$key];
+			if($value === false){
+				$alerts[$key] = false;
+				continue;
+			}
 			if(!is_string($value) || trim($value) === ""){
-				$this->warnings[] = "Ignored '$key': expected a non-empty message string.";
+				$this->warnings[] = "Ignored '$key': expected a non-empty message string or false to hide it.";
 				continue;
 			}
 			if(preg_match('/\{%[0-9]+}/', $value) === 1){

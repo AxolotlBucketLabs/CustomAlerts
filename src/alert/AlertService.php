@@ -25,6 +25,9 @@ final class AlertService{
 
 	public function render(AlertContext $context) : ?string{
 		$template = $this->config->getAlert($context->getType());
+		if($template === false){
+			return "";
+		}
 		if(!$template instanceof Template){
 			return null;
 		}

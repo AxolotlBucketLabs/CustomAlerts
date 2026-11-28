@@ -19,7 +19,9 @@ GitHub Actions builds and validates the plugin PHAR. Install either the PHAR or 
 
 ## Configuration
 
-The configuration uses one flat key for each message. Old nested `messages:` settings are not read. Copy any message text you want to keep into the flat keys below. A missing key normally keeps the server's default message. A missing death-cause key uses `messages.death`, and a first join without `messages.first_join` uses `messages.join`. If the attacker cannot be identified, the generic death message is used.
+The configuration uses one flat key for each message. Old nested `messages:` settings are not read. A string sets the custom message, while `false` hides the broadcast. An omitted key keeps PocketMine's default message when one exists. Optional alerts such as `messages.world_change` stay disabled when omitted. A missing death-cause key uses `messages.death`, and a missing `messages.first_join` uses `messages.join`. An explicit `false` suppresses the alert instead of using its fallback. If the attacker cannot be identified, the generic death message is used.
+
+For example, set `messages.quit: false` to hide quit broadcasts.
 
 ```yaml
 messages.join: "&8[&a+&8] &2[{TIME}] &a{PLAYER}&e joined the game."

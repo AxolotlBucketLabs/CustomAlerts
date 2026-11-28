@@ -40,7 +40,7 @@ final readonly class WorldChangeListener implements Listener{
 			"TARGET" => $target->getDisplayName()
 		]);
 		$message = $this->alerts->render($context);
-		if($message !== null){
+		if($message !== null && $message !== ""){
 			$player->getServer()->broadcastMessage($message);
 		}
 	}
