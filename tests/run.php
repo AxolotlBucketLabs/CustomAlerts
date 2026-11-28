@@ -25,7 +25,7 @@ $namespacePrefix = $manifest["src-namespace-prefix"] ?? null;
 if(!is_string($mainClass) || !is_string($namespacePrefix)){
 	throw new RuntimeException("plugin.yml is missing its main class or namespace prefix");
 }
-$assert(isset($config["messages.join"]) && !isset($config["messages"]["join"]), "message keys should be flat");
+$assert(isset($config["messages.join"]) && !array_key_exists("messages", $config), "message keys should be flat");
 $mainRelative = substr($mainClass, strlen($namespacePrefix) + 1);
 $assert(is_file($root . "/src/" . str_replace("\\", "/", $mainRelative) . ".php"), "plugin main class path does not match plugin.yml");
 
